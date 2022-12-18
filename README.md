@@ -6,3 +6,8 @@ This is the repository for my own custom FNF engine. Though its not much now, it
 
 You really wanna compile this rn? Deadass? Fr? On god?
 Ight, just you the normal method of compiling base FNF...
+
+## Discord
+
+If you wanna see where this is being built and hangout with some of the other team members for my friends mod of FNF, Head the discord link below.
+-https://discord.gg/qJAdVkm5N7-
