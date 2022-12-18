@@ -20,5 +20,5 @@ If you wanna see where this is being built and hangout with some of the other te
 - New optimization features
 - and of course.... Drum roll please.. badumbadumbadumbadum... FULL MAC SUPPORT!
 
-### btw Average is bad
+
 
