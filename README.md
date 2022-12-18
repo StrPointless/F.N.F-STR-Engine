@@ -18,7 +18,7 @@ If you wanna see where this is being built and hangout with some of the other te
 - New in-game UI
 - New menu appearences
 - New optimization features
-- and of course.... Drum roll please.. badumbadumbadumbadum... FULL MAC SUPPORT!
+- and of course.... Drum roll please.. badumbadumbadumbadum... FULL MAC SUPPORT! (For Zero)
 
 
 
