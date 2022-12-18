@@ -1,0 +1,16 @@
+setUP
+W
+setLEFT
+A
+setDOWN
+S
+setRIGHT
+D
+setACCEPT
+ENTER
+setBACK
+BACKSPACE
+setPAUSE
+ENTER
+setRESET
+R
