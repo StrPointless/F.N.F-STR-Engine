@@ -11,3 +11,12 @@ Ight, just you the normal method of compiling base FNF...
 
 If you wanna see where this is being built and hangout with some of the other team members for my friends mod of FNF, Head the discord link below.
 -https://discord.gg/qJAdVkm5N7-
+
+## What to expect in the coming updates
+
+- Custom Keybinds
+- New in-game UI
+- New menu appearences
+- New optimization features
+- and of course.... Drum roll please.. badumbadumbadumbadum... FULL MAC SUPPORT!
+
