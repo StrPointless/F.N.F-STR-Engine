@@ -33,8 +33,8 @@ class MainMenuState extends MusicBeatState
 
 	override function create()
 	{
-		if(SaveConfig.keysLoaded == false)
-			SaveConfig.loadKeybinds();
+		//if(SaveConfig.keysLoaded == false)
+		//	SaveConfig.loadKeybinds();
 		transIn = FlxTransitionableState.defaultTransIn;
 		transOut = FlxTransitionableState.defaultTransOut;
 
@@ -87,7 +87,6 @@ class MainMenuState extends MusicBeatState
 			menuItem.scrollFactor.set();
 			menuItem.antialiasing = true;
 		}
-
 		FlxG.camera.follow(camFollow, null, 0.06);
 
 		var versionShit:FlxText = new FlxText(5, FlxG.height - 18, 0, "[ S.T.R ] V." + Application.current.meta.get('version'), 12);
