@@ -1,9 +1,13 @@
 package;
 
+import flixel.math.FlxPoint;
 import flixel.input.keyboard.FlxKeyboard;
 import flixel.input.keyboard.FlxKeyList;
 import Controls.Control;
 import flash.text.TextField;
+import flixel.FlxSubState;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.display.FlxGridOverlay;
@@ -13,8 +17,9 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import lime.utils.Assets;
+using StringTools;
 
-class KeybindState extends MusicBeatState
+class KeybindSubstate extends MusicBeatSubstate
 {
 	var selector:FlxText;
 	var curSelected:Int = 0;
@@ -24,9 +29,12 @@ class KeybindState extends MusicBeatState
 	private var grpControls:FlxTypedGroup<Alphabet>;
 	var keyStrings:Array<String> = [];
 	var bindPositions:Array<String> = ['Left','Down','Up','Right'];
+	var ready:Bool = false;
 
-	override function create()
+	var ogPosition:Float;
+	public function new(x:Float,y:Float)
 	{
+		super();
 		var menuBG:FlxSprite = new FlxSprite().loadGraphic('assets/images/menuDesat.png');
 		controlsStrings = CoolUtil.coolTextFile('assets/data/controls.txt');
 		menuBG.color = 0xFFea71fd;
@@ -34,17 +42,20 @@ class KeybindState extends MusicBeatState
 		menuBG.updateHitbox();
 		menuBG.screenCenter();
 		menuBG.antialiasing = true;
-		add(menuBG);
-
+		//add(menuBG);
 		grpControls = new FlxTypedGroup<Alphabet>();
 		add(grpControls);
 
 		for (i in 0...bindPositions.length)
 		{
-			var controlLabel:Alphabet = new Alphabet(0, (70 * i) + 30, bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i] + '.', true, false);
-			trace( bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i] + '.');
-			controlLabel.isMenuItem = true;
-			controlLabel.targetY = i;
+			var controlLabel:Alphabet = new Alphabet(0,0, bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i], true, false);
+			//trace(bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i]);
+			//controlLabel.isMenuItem = true;
+			controlLabel.screenCenter();
+			controlLabel.y += (100 * (i - (bindPositions.length / 2))) + 50;
+			//controlLabel.targetY = i;
+			//ogPosition = controlLabel.x;
+			//controlLabel.x = controlLabel.x + 1000;
 			grpControls.add(controlLabel);
 			//if (controlsStrings[i].indexOf('set') != -1)
 			//{
@@ -52,19 +63,37 @@ class KeybindState extends MusicBeatState
 				//trace(repstring.charAt(repstring.length - 1));
 			//}
 			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
+			//FlxTween.tween(i, {'alpha': 1}, 0.35,{ease: FlxEase.cubeOut});
 		}
-
-		super.create();
+		changeSelection(0);
 		//trace();
 	}
-
+	function createBindingText()
+	{
+		for(i in grpControls)
+		{
+			if(i.ID == curSelected)
+				i.color = FlxColor.GREEN;
+		}
+	}
+	//Not gonna actually delete it.
+	function deleteBindingText()
+	{
+		for(i in grpControls)
+		{
+			if(i.ID == curSelected)
+				i.color = FlxColor.WHITE;
+		}
+	}
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		if (controls.ACCEPT)
+		if(!controls.ACCEPT)
+			ready = true;
+		if (controls.ACCEPT && ready)
 		{
 			changeBinding();
+			createBindingText();
 		}
 
 		if (isSettingControl)
@@ -73,7 +102,13 @@ class KeybindState extends MusicBeatState
 		{
 			if (controls.BACK)
 			{
-				FlxG.switchState(new OptionsMenu());
+				for(i in grpControls)
+				{
+					FlxTween.tween(i, {x: i.x - 1000}, 0.35,{ease: FlxEase.backInOut, onComplete: function(twn:FlxTween)
+						{
+							close();
+						}});
+				}
 				SaveConfig.saveKeybinds();
 				SaveConfig.keysLoaded = true;
 			}
@@ -83,7 +118,6 @@ class KeybindState extends MusicBeatState
 				changeSelection(1);
 		}
 	}
-
 	function waitingInput():Void
 	{
 		if (FlxG.keys.justPressed.ANY && FlxG.keys.getIsDown().length > 0 && !FlxG.keys.justPressed.ENTER)
@@ -100,6 +134,7 @@ class KeybindState extends MusicBeatState
 					SaveConfig.setKeybinds(FlxG.keys.getIsDown()[0].ID,Control.RIGHT,3);
 			}
 			isSettingControl = false;
+			deleteBindingText();
 			reloadList();
 		}
 		// PlayerSettings.player1.controls.replaceBinding(Control)
@@ -114,11 +149,15 @@ class KeybindState extends MusicBeatState
 
 		for (i in 0...bindPositions.length)
 		{
-			var controlLabel:Alphabet = new Alphabet(0, (70 * i) + 30, bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i], true, false);
-			trace(bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i]);
-			controlLabel.isMenuItem = true;
-			controlLabel.targetY = i;
+			var controlLabel:Alphabet = new Alphabet(0,0, bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i], true, false);
+			//trace(bindPositions[i] + ' is ' + SaveConfig.playerKeybinds[i]);
+			//controlLabel.isMenuItem = true;
+			controlLabel.screenCenter();
+			controlLabel.y += (100 * (i - (bindPositions.length / 2))) + 50;
+			//controlLabel.targetY = i;
 			grpControls.add(controlLabel);
+			controlLabel.scale.set(1.1,1.1);
+			FlxTween.tween(controlLabel.scale, {x:1,y:1},0.25,{ease:FlxEase.sineOut});
 			//if (controlsStrings[i].indexOf('set') != -1)
 			//{
 				//var repstring:String = controlsStrings[i].substring(3) + ': ' + controlsStrings[i + 1];
@@ -126,10 +165,10 @@ class KeybindState extends MusicBeatState
 			//}
 			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
 		}
+		changeSelection(0);
 	}
 	function changeBinding():Void
 	{
-		if (!isSettingControl)
 		{
 			isSettingControl = true;
 		}
@@ -137,6 +176,7 @@ class KeybindState extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
+		//ready = true;
 		#if !switch
 		//NGio.logEvent('Fresh');
 		#end

@@ -259,8 +259,8 @@ class TitleState extends MusicBeatState
 			//if (Date.now().getDay() == 5)
 			//	NGio.unlockMedal(61034);
 			#end
-
-			titleText.animation.play('press');
+			if(titleText != null)
+				titleText.animation.play('press');
 
 			FlxG.camera.flash(FlxColor.WHITE, 1);
 			FlxG.sound.play('assets/sounds/confirmMenu' + TitleState.soundExt, 0.7);
@@ -320,7 +320,8 @@ class TitleState extends MusicBeatState
 	{
 		super.beatHit();
 
-		logoBl.animation.play('bump');
+		if(logoBl != null)
+			logoBl.animation.play('bump');
 		danceLeft = !danceLeft;
 
 		if (danceLeft)

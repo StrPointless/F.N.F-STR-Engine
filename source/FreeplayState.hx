@@ -9,6 +9,7 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import lime.utils.Assets;
+import Controls.Control;
 
 using StringTools;
 
@@ -194,7 +195,7 @@ class FreeplayState extends MusicBeatState
 			var poop:String = Highscore.formatSong(songs[curSelected].toLowerCase(), curDifficulty);
 
 			trace(poop);
-
+			//setUpKeys();
 			PlayState.SONG = Song.loadFromJson(poop, songs[curSelected].toLowerCase());
 			PlayState.isStoryMode = false;
 			PlayState.storyDifficulty = curDifficulty;
@@ -203,7 +204,12 @@ class FreeplayState extends MusicBeatState
 				FlxG.sound.music.stop();
 		}
 	}
+	function setUpKeys()
+	{
+		PlayerSettings.player1.controls.replaceBinding(Control.LEFT, Keys, SaveConfig.playerKeybinds[0],SaveConfig.playerKeybinds[0]);
+        SaveConfig.playerKeybinds[0] = SaveConfig.playerKeybinds[0];
 
+	}
 	function changeDiff(change:Int = 0)
 	{
 		curDifficulty += change;
@@ -248,7 +254,7 @@ class FreeplayState extends MusicBeatState
 		// lerpScore = 0;
 		#end
 
-		FlxG.sound.playMusic('assets/music/' + songs[curSelected] + "_Inst" + TitleState.soundExt, 0);
+		//FlxG.sound.playMusic('assets/music/' + songs[curSelected] + "_Inst" + TitleState.soundExt, 0);
 
 		var bullShit:Int = 0;
 

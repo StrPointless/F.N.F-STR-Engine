@@ -10,6 +10,7 @@ class Character extends FlxSprite
 {
 	public var animOffsets:Map<String, Array<Dynamic>>;
 	public var debugMode:Bool = false;
+	public var singDuration:Float = 4;
 
 	public var isPlayer:Bool = false;
 	public var curCharacter:String = 'bf';

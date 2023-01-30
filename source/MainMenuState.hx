@@ -33,6 +33,7 @@ class MainMenuState extends MusicBeatState
 
 	override function create()
 	{
+		//SaveConfig.loadPreferences();
 		//if(SaveConfig.keysLoaded == false)
 		//	SaveConfig.loadKeybinds();
 		transIn = FlxTransitionableState.defaultTransIn;
@@ -222,4 +223,5 @@ class MainMenuState extends MusicBeatState
 			spr.updateHitbox();
 		});
 	}
+
 }

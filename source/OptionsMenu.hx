@@ -10,67 +10,104 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.group.FlxGroup;
 import flixel.input.keyboard.FlxKey;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.FlxSubState;
+import flixel.util.FlxSignal;
 import lime.utils.Assets;
+import flixel.addons.display.FlxBackdrop;
 
 
 class OptionsMenu extends MusicBeatSubstate
 {
 	var textMenuItems:Array<String> = ['Gameplay', 'UI', 'Controls', 'Accesibilty'];
+	var description:Array<String> = ['Customize your in-game playstyle', 'Customize The position and General UI Aspects.', 'Change your keybinds(DO THAT NOW)', 'General Accessibilty Features'];
 	private var grpItems:FlxTypedGroup<Alphabet>;
 	var curSelected:Int = 0;
+	var descriptionText:FlxText;
+
+	var selectorLeft:Alphabet;
+	var selectorRight:Alphabet;
+	public static var base:FlxSprite;
+	var inSubState:Bool = false;
+	var curSubstate:FlxSubState;
+	var descBar:FlxSprite;
+	var CoolBG:FlxBackdrop = new FlxBackdrop(Paths.image('Main_Checker'), XY);
+	var ScrollSpeed:Float = 0.5;
+	var menuBG:FlxBackdrop;
 
 	override function create()
 	{
-		FlxTransitionableState.skipNextTransIn = true;
-		FlxTransitionableState.skipNextTransOut = true;
-
-		var menuBG:FlxSprite = new FlxSprite().loadGraphic('assets/images/menuDesat.png');
+		persistentUpdate = persistentDraw = true;
+		menuBG =  new FlxBackdrop(Paths.image('menuDesat'), X);//new FlxSprite().loadGraphic('assets/images/menuDesat.png');
 		menuBG.color = 0xFFea71fd;
 		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
 		menuBG.updateHitbox();
 		menuBG.screenCenter();
 		menuBG.antialiasing = true;
 		add(menuBG);
+		base = new FlxSprite();
+		base.frames = Paths.getSparrowAtlas('OptionsMenuAssets/Base');
+		base.animation.addByPrefix('idle','Idle', 24);
+		base.scale.set(1,1);
+		base.animation.play('idle');
+		base.scrollFactor.set(1,1);
+		//base.screenCenter();
+		//add(base);
+		CoolBG.screenCenter();
+		add(CoolBG);
 
+		descBar = new FlxSprite(0,675).makeGraphic(1280,720,FlxColor.BLACK);
+		//descBar.screenCenter();
+		descBar.alpha = 0.6;
+		descBar.scrollFactor.set(0,0);
+		add(descBar);
+		descriptionText = new FlxText(0,675,5000, description[0], 12);
+		descriptionText.screenCenter(X);
+		descriptionText.setFormat("VCR OSD Mono", 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(descriptionText);
+		selectorLeft = new Alphabet(0, 0, '<', true, false);
+		add(selectorLeft);
+		selectorRight = new Alphabet(0, 0, '>', true, false);
+		add(selectorRight);
+		var settingsLabel = new Alphabet(0, 0, 'Settings', true, false);
+		settingsLabel.screenCenter();
+		settingsLabel.y -= 300;
+		add(settingsLabel);
+				
 		grpItems = new FlxTypedGroup<Alphabet>();
 		add(grpItems);
-
 		for (i in 0...textMenuItems.length)
 		{
-			var label:Alphabet = new Alphabet(0, (70 * i) + 30, textMenuItems[i], true, false);
-			label.isMenuItem = true;
-			label.targetY = i;
-			label.screenCenter(X);
-			grpItems.add(label);
-			//if (controlsStrings[i].indexOf('set') != -1)
-			//{
-				//var repstring:String = controlsStrings[i].substring(3) + ': ' + controlsStrings[i + 1];
-				//trace(repstring.charAt(repstring.length - 1));
-			//}
-			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
+			var optionText:Alphabet = new Alphabet(0, 0, textMenuItems[i], true, false);
+			optionText.ID = i;
+			optionText.screenCenter();
+			optionText.y += 250;
+			grpItems.add(optionText);
 		}
-
-		super.create();
 		
+		super.create();
+		changeSelection(0);
+		
+		subStateClosed.add((curSubstate)->{onSubStateClose();});
 	}
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		if (controls.ACCEPT)
+		if (controls.ACCEPT && !inSubState)
 		{
 			switch(curSelected)
 			{
 				case 0:
-					trace('go to Gameplay');
+					openSubState(new GameplaySubstate(0,0));
 				case 1:
 					trace('go to UI');
 				case 2:
-					FlxG.switchState(new KeybindState());
+					openSubState(new KeybindSubstate(0,0));
 				case 3:
 					trace('go to accesibilty');
 					
@@ -78,20 +115,50 @@ class OptionsMenu extends MusicBeatSubstate
 		}
 		else
 		{
-			if (controls.BACK)
+			if (controls.BACK && !inSubState)
 			{
-				FlxTransitionableState.skipNextTransIn = false;
-				FlxTransitionableState.skipNextTransOut = false;
 				FlxG.switchState(new MainMenuState());
+				SaveConfig.savePreferences();
 			}
-			if (controls.UP_P)
+			if (controls.LEFT_P && !inSubState)
 				changeSelection(-1);
-			if (controls.DOWN_P)
+			if (controls.RIGHT_P && !inSubState)
 				changeSelection(1);
 		}
+		CoolBG.x -= ScrollSpeed;
+		CoolBG.y -= ScrollSpeed;
+		menuBG.x -= ScrollSpeed;
 	}
+	override function openSubState(SubState:FlxSubState)
+	{
+		curSubstate = SubState;
+		super.openSubState(SubState);
+		for(i in grpItems)
+			{
+				FlxTween.tween(i, {x: i.x + 300, y: i.y + 25}, 0.5,{ease: FlxEase.cubeInOut});
+				FlxTween.tween(descriptionText, {y: descriptionText.y + 200},0.5, {ease: FlxEase.cubeInOut});
+				FlxTween.tween(descBar, {y: 0}, 0.5,{ease: FlxEase.cubeInOut});
+				FlxTween.tween(selectorLeft, {x: selectorLeft.x + 300, y: selectorLeft.y + 25}, 0.5,{ease: FlxEase.cubeInOut});
+				FlxTween.tween(selectorRight, {x: selectorRight.x + 300, y: selectorRight.y + 25}, 0.5,{ease: FlxEase.cubeInOut});
+				inSubState = true;
+			}
+	}
+	function onSubStateClose()
+	{
+		inSubState = false;
+		for(i in grpItems)
+		{
+			FlxTween.tween(i, {x: i.x - 300, y: i.y - 25}, 0.5,{ease: FlxEase.cubeInOut});
+			FlxTween.tween(descriptionText, {y: descriptionText.y - 200},0.5, {ease: FlxEase.cubeInOut});
+			FlxTween.tween(descBar, {y: 675}, 0.5,{ease: FlxEase.cubeInOut});
+			FlxTween.tween(selectorLeft, {x: selectorLeft.x - 300, y: selectorLeft.y - 25}, 0.5,{ease: FlxEase.cubeInOut});
+			FlxTween.tween(selectorRight, {x: selectorRight.x - 300, y: selectorRight.y - 25}, 0.5,{ease: FlxEase.cubeInOut});
+		}
+	}
+	var c_twn:FlxTween;
 	function changeSelection(change:Int = 0)
 	{
+		updateDescriptionText();
 		#if !switch
 		//NGio.logEvent('Fresh');
 		#end
@@ -111,17 +178,31 @@ class OptionsMenu extends MusicBeatSubstate
 
 		for (item in grpItems.members)
 		{
-			item.targetY = bullShit - curSelected;
-			bullShit++;
-
-			item.alpha = 0.6;
-			// item.setGraphicSize(Std.int(item.width * 0.8));
-
-			if (item.targetY == 0)
+			item.alpha = 0;
+			item.scale.x = 1;
+			item.scale.y = 1;
+			if(item.ID == curSelected)
 			{
+				if(c_twn != null)
+					c_twn.cancel();
+				item.scale.x = 1.2;
+				item.scale.y = 1.2;
+				c_twn = FlxTween.tween(item.scale, {x: 1, y: 1}, 0.25, {ease: FlxEase.sineOut});
 				item.alpha = 1;
-				// item.setGraphicSize(Std.int(item.width));
+				selectorLeft.x = item.x - 63;
+				selectorLeft.y = item.y;
+				selectorRight.x = item.x + item.width + 15;
+				selectorRight.y = item.y;
+				descriptionText.text = description[item.ID];
 			}
 		}
+	}
+	var d_twn:FlxTween;
+	function updateDescriptionText()
+	{
+		if(d_twn != null)
+			d_twn.cancel();
+		descriptionText.y = 750;
+		d_twn = FlxTween.tween(descriptionText, {y: 675}, 0.25, {ease: FlxEase.sineOut});
 	}
 }

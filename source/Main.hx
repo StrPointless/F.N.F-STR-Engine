@@ -6,13 +6,16 @@ import openfl.display.Sprite;
 
 class Main extends Sprite
 {
+	var fmem:FMEM = new FMEM(10, 10, 0xffffff);
+
 	public function new()
 	{
 		super();
 		addChild(new FlxGame(0, 0, Cache));
 
 		#if !mobile
-		addChild(new FPS(10, 3, 0xFFFFFF));
+		addChild(fmem);
 		#end
+		//addChild(new Memory())
 	}
 }
